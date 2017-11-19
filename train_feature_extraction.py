@@ -4,8 +4,8 @@ from sklearn.model_selection import train_test_split
 from alexnet import AlexNet
 
 # TODO: Load traffic signs data.
-# Load pickled data
 import pickle
+import time
 
 inputs_loc = '/media/fqaiser94/ff3daf1f-fc36-43a4-a218-478126941f2a/traffic-signs-data/'
 
@@ -34,7 +34,7 @@ x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 resized = tf.image.resize_images(x, (227, 227))
 
 y = tf.placeholder(tf.int32, (None))
-one_hot_y = tf.one_hot(y, 43)
+# one_hot_y = tf.one_hot(y, 43)
 
 
 # TODO: pass placeholder as first argument to `AlexNet`.
@@ -63,13 +63,13 @@ EPOCHS = 10
 BATCH_SIZE = 128
 rate = 0.001
 
-cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=one_hot_y, logits=logits)
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=logits)
 loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = rate)
 training_operation = optimizer.minimize(loss_operation, var_list=[fc8W, fc8b])
 
 
-correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
+correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(y, 1))
 accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 saver = tf.train.Saver(max_to_keep=None)
 
@@ -92,6 +92,7 @@ with tf.Session() as sess:
     print("Training...")
     print()
     for i in range(EPOCHS):
+        t0 = time.time()
         for offset in range(0, num_examples, BATCH_SIZE):
             end = offset + BATCH_SIZE
             batch_x, batch_y = X_train[offset:end], y_train[offset:end]
@@ -99,6 +100,7 @@ with tf.Session() as sess:
 
         validation_accuracy = evaluate(X_valid, y_valid)
         print("EPOCH {} ...".format(i + 1))
+        print("Time: %.3f seconds" % (time.time() - t0))
         print("Validation Accuracy = {:.3f}".format(validation_accuracy))
         print()
 

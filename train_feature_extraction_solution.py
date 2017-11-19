@@ -10,10 +10,13 @@ nb_classes = 43
 epochs = 10
 batch_size = 128
 
-with open('./train.p', 'rb') as f:
+with open('/media/fqaiser94/ff3daf1f-fc36-43a4-a218-478126941f2a/traffic-signs-data/train.p', 'rb') as f:
     data = pickle.load(f)
 
 X_train, X_val, y_train, y_val = train_test_split(data['features'], data['labels'], test_size=0.33, random_state=0)
+
+X_train, y_train = X_train[:10000], y_train[:10000]
+
 
 features = tf.placeholder(tf.float32, (None, 32, 32, 3))
 labels = tf.placeholder(tf.int64, None)
@@ -29,7 +32,7 @@ fc8W = tf.Variable(tf.truncated_normal(shape, stddev=1e-2))
 fc8b = tf.Variable(tf.zeros(nb_classes))
 logits = tf.nn.xw_plus_b(fc7, fc8W, fc8b)
 
-cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels)
+cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=logits, labels=labels)
 loss_op = tf.reduce_mean(cross_entropy)
 opt = tf.train.AdamOptimizer()
 train_op = opt.minimize(loss_op, var_list=[fc8W, fc8b])
@@ -62,6 +65,7 @@ with tf.Session() as sess:
         t0 = time.time()
         for offset in range(0, X_train.shape[0], batch_size):
             end = offset + batch_size
+            print("Training...epoch {}".format(i + 1))
             sess.run(train_op, feed_dict={features: X_train[offset:end], labels: y_train[offset:end]})
 
         val_loss, val_acc = eval_on_data(X_val, y_val, sess)
